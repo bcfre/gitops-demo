@@ -32,8 +32,8 @@ spec:
   {{- end }}
   fileSystemType: thin
   fuse:
-    image: {{ .Values.image.model.repository }}
-    imageTag: {{ .Values.image.model.tag }}
+    image: {{ .Values.modelimage.repository }}
+    imageTag: {{ .Values.modelimage.tag }}
     imagePullPolicy: {{ .Values.image.model.pullPolicy }}
     command:
     - bash

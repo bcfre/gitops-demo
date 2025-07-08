@@ -34,7 +34,7 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{- define "model-ops-model.fullname" -}}
-{{- $tag := .Values.image.model.tag }}
+{{- $tag := .Values.modelimage.tag }}
 {{- $rawName := printf "%s-%s" .Release.Name $tag -}}
 {{ include "mychart.sanitizeName" $rawName }}
 {{- end }}

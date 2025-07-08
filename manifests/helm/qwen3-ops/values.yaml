@@ -16,6 +16,11 @@ image:
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: "qwen3-0.6b"
+modelimage:
+  repository: baicun-business-registry.ap-northeast-1.cr.aliyuncs.com/baicun-dev/model-volume
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.      modelimage.tag
+  tag: "qwen3-0.6b"
 
 imagePullSecrets: 
   deploy: ""
