@@ -139,7 +139,7 @@ spec:
 apiVersion: policy.one.alibabacloud.com/v1alpha1
 kind: ClusterOverridePolicy
 metadata:
-  name: model-op
+  name: qwen3-qwen3-0-6b
 spec:
   resourceSelectors:
   - apiVersion: data.fluid.io/v1alpha1
@@ -163,6 +163,22 @@ spec:
             path: /spec/fuse/image
             value: baicun-business-registry.ap-northeast-1.cr.aliyuncs.com/baicun-dev/model-volume
 ---
+# Source: model-ops/templates/propagation.yaml
+apiVersion: policy.one.alibabacloud.com/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: dataset-cpp
+spec:
+  overridePolicies:
+    - name: qwen3-qwen3-0-6b
+  resourceSelectors:
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: ThinRuntimeProfile
+    name:  qwen3-qwen3-0-6b
+  placement:
+    replicaScheduling:
+      replicaSchedulingType: Duplicated
+---
 # Source: model-ops/templates/dataset.yaml
 apiVersion: data.fluid.io/v1alpha1
 kind: Dataset
@@ -173,40 +189,6 @@ spec:
     # 模型文件在，镜像中的存储位置
   - mountPoint: oci+images:///models/model
     name: models-dir
----
-# Source: model-ops/templates/propagation.yaml
-apiVersion: policy.one.alibabacloud.com/v1alpha1
-kind: PropagationPolicy
-metadata:
-  name: demo-policy
-spec:
-#  autoScaling:
-#    ecsProvision: true
-  preserveResourcesOnDeletion: false
-  conflictResolution: Overwrite
-  resourceSelectors:
-  - apiVersion: apps/v1
-    kind: Deployment
-  - apiVersion: data.fluid.io/v1alpha1
-    kind: Dataset
-  - apiVersion: data.fluid.io/v1alpha1
-    kind: ThinRuntime
-  - apiVersion: v1
-    kind: ConfigMap
-  placement:
-    replicaScheduling:
-      replicaSchedulingType: Divided
-      replicaDivisionPreference: Weighted
-      weightPreference:
-        staticWeightList:
-        - targetCluster:
-            clusterNames:
-            - c569730584901471a990e7529cae5468b
-          weight: 1
-        - targetCluster:
-            clusterNames:
-            - c4ac3272b29074e748fdbba9e09ddc84a
-          weight: 1
 ---
 # Source: model-ops/templates/propagation.yaml
 apiVersion: policy.one.alibabacloud.com/v1alpha1
