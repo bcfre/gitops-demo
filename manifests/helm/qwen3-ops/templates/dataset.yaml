@@ -32,7 +32,7 @@ spec:
   {{- end }}
   fileSystemType: thin
   fuse:
-    image: {{ .Values.image.deploy.repository }}
+    image: {{ .Values.image.model.repository }}
     imageTag: {{ .Values.image.model.tag }}
     imagePullPolicy: {{ .Values.image.model.pullPolicy }}
     command:

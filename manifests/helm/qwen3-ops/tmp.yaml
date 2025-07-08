@@ -195,7 +195,7 @@ spec:
   - name: imagesecret
   fileSystemType: thin
   fuse:
-    image: kube-ai-registry.cn-shanghai.cr.aliyuncs.com/kube-ai/vllm-openai
+    image: baicun-business-registry-vpc.ap-northeast-1.cr.aliyuncs.com/baicun-dev/model-volume
     imageTag: qwen3-0.6b
     imagePullPolicy: IfNotPresent
     command:
