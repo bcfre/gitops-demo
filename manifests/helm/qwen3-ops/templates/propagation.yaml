@@ -5,8 +5,8 @@ metadata:
   labels:
     {{- include "model-ops.labels" . | nindent 4 }}
 spec:
-  overridePolicies:
-    - name: {{ include "model-ops-model.fullname" . }}
+  dependentOverrides:
+    - {{ include "model-ops-model.fullname" . }}
   resourceSelectors:
   - apiVersion: data.fluid.io/v1alpha1
     kind: ThinRuntimeProfile

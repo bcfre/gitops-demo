@@ -98,8 +98,8 @@ metadata:
     app.kubernetes.io/version: "1.16.0"
     app.kubernetes.io/managed-by: Helm
 spec:
-  overridePolicies:
-    - name: qwen3-qwen3-0-6b
+  dependentOverrides:
+    - qwen3-qwen3-0-6b
   resourceSelectors:
   - apiVersion: data.fluid.io/v1alpha1
     kind: ThinRuntimeProfile
