@@ -1,0 +1,284 @@
+---
+# Source: model-ops/templates/model-image-entrypoint.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-image-entrypoint
+data:
+  entrypoint.sh: |
+    #!/usr/bin/env bash
+    set +x
+    python /fluid_config_init.py
+    chmod u+x /mount-image-volume.sh
+    bash /mount-image-volume.sh
+---
+# Source: model-ops/templates/model-image-fluid-config-init.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-image-fluid-config-init
+data:
+  fluid_config_init.py: |
+    import json
+    rawStr = ""
+    with open("/etc/fluid/config/config.json", "r") as f:
+        rawStr = f.readlines()
+    print(rawStr[0])
+
+    script = """
+    #!/bin/sh
+    MNT_POINT=$targetPath
+
+    echo $MNT_POINT
+
+    if test -e ${MNT_POINT}
+    then
+        echo "MNT_POINT exist"
+    else
+        mkdir -p ${MNT_POINT}
+    fi
+
+    mount --bind $sourcePath $MOUNT_POINT
+
+
+    cleanup() {
+        echo "Cleaning up mount point..."
+        umount ${MNT_POINT}
+        rmdir ${MNT_POINT}
+        exit
+    }
+
+    trap cleanup SIGINT SIGTERM
+    # 主程序逻辑
+
+    sleep inf
+    """
+
+    def parse_oci_uri(uri: str) -> str:
+        """
+        将格式为 oci:///models/model 的 URI 解析为 models/model。
+        如果 URI 不以 oci+images:// 开头，则抛出 ValueError。
+        """
+        prefix = 'oci+images://'
+        if not uri.startswith(prefix):
+            raise ValueError("URI must start with 'oci://'")
+        
+        # 截取路径部分并去除前导斜杠
+        path = uri[len(prefix):].lstrip('/')
+        return path
+
+
+    obj = json.loads(rawStr[0])
+    volAttrs = obj['mounts'][0]
+
+    print("pvAttrs", volAttrs)
+
+    sourcePathTmp = volAttrs["mountPoint"]
+    # additionalPathTmp = volAttrs["mountPoint"]
+
+    with open("/mount-image-volume.sh", "w") as f:
+        f.write("targetPath=\"%s\"\n" % obj['targetPath'])
+        f.write("sourcePath=\"%s\"\n" % parse_oci_uri(sourcePathTmp))
+        f.write(script)
+---
+# Source: model-ops/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    helm.sh/chart: model-ops-0.1.0
+    app.kubernetes.io/name: qwen3-model-ops
+    app.kubernetes.io/instance: qwen3
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  name: qwen3-model-ops
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qwen3-model-ops
+      app.kubernetes.io/instance: qwen3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: qwen3-model-ops
+        app.kubernetes.io/instance: qwen3
+    spec:
+      # imagePullSecrets:
+      # - name: imagesecret
+      containers:
+        - command:
+          - sh
+          - -c
+          - "sleep infinity"
+          # - vllm serve /mnt/model --served-model-name qwen3-0.6b --port 8000 --trust-remote-code --max-model-len 2048 --gpu-memory-utilization 0.95
+          image: kube-ai-registry.cn-shanghai.cr.aliyuncs.com/kube-ai/vllm-openai
+          imageTag: "v0.9.1"
+          imagePullPolicy: 
+          name: vllm
+          ports:
+          - containerPort: 8000
+            name: restful
+            protocol: TCP
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: 8000
+          #   initialDelaySeconds: 30
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: /mnt/model
+              name: model-vol
+              mountPropagation: HostToContainer
+      volumes:
+        - name: model-vol
+          persistentVolumeClaim:
+            claimName: qwen3-qwen3-0-6b
+---
+# Source: model-ops/templates/override.yaml
+apiVersion: policy.one.alibabacloud.com/v1alpha1
+kind: ClusterOverridePolicy
+metadata:
+  name: model-op
+spec:
+  resourceSelectors:
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: ThinRuntimeProfile
+    name:  qwen3-qwen3-0-6b
+  overrideRules:
+    - targetCluster:
+        clusterNames:
+          - c569730584901471a990e7529cae5468b
+      overriders:
+        plaintext:
+          - operator: replace
+            path: /spec/fuse/image
+            value: baicun-business-registry.cn-beijing.cr.aliyuncs.com/baicun-dev/model-volume
+    - targetCluster:
+        clusterNames:
+          - c4ac3272b29074e748fdbba9e09ddc84a
+      overriders:
+        plaintext:
+          - operator: replace
+            path: /spec/fuse/image
+            value: baicun-business-registry.ap-northeast-1.cr.aliyuncs.com/baicun-dev/model-volume
+---
+# Source: model-ops/templates/dataset.yaml
+apiVersion: data.fluid.io/v1alpha1
+kind: Dataset
+metadata:
+  name: qwen3-qwen3-0-6b
+spec:
+  mounts:
+    # 模型文件在，镜像中的存储位置
+  - mountPoint: 
+    name: models-dir
+---
+# Source: model-ops/templates/propagation.yaml
+apiVersion: policy.one.alibabacloud.com/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: demo-policy
+spec:
+#  autoScaling:
+#    ecsProvision: true
+  preserveResourcesOnDeletion: false
+  conflictResolution: Overwrite
+  resourceSelectors:
+  - apiVersion: apps/v1
+    kind: Deployment
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: Dataset
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: ThinRuntime
+  - apiVersion: v1
+    kind: ConfigMap
+  placement:
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        staticWeightList:
+        - targetCluster:
+            clusterNames:
+            - c569730584901471a990e7529cae5468b
+          weight: 1
+        - targetCluster:
+            clusterNames:
+            - c4ac3272b29074e748fdbba9e09ddc84a
+          weight: 1
+---
+# Source: model-ops/templates/propagation.yaml
+apiVersion: policy.one.alibabacloud.com/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: demo-policy
+spec:
+#  autoScaling:
+#    ecsProvision: true
+  preserveResourcesOnDeletion: false
+  conflictResolution: Overwrite
+  resourceSelectors:
+  - apiVersion: apps/v1
+    kind: Deployment
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: Dataset
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: ThinRuntime
+  - apiVersion: v1
+    kind: ConfigMap
+  placement:
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        staticWeightList:
+        - targetCluster:
+            clusterNames:
+            - c569730584901471a990e7529cae5468b
+          weight: 1
+        - targetCluster:
+            clusterNames:
+            - c4ac3272b29074e748fdbba9e09ddc84a
+          weight: 1
+---
+# Source: model-ops/templates/dataset.yaml
+apiVersion: data.fluid.io/v1alpha1
+kind: ThinRuntime
+metadata:
+  name: qwen3-qwen3-0-6b
+spec:
+  profileName: qwen3-qwen3-0-6b
+---
+# Source: model-ops/templates/dataset.yaml
+apiVersion: data.fluid.io/v1alpha1
+kind: ThinRuntimeProfile
+metadata:
+  name: qwen3-qwen3-0-6b
+spec:
+  imagePullSecrets:
+  - name: imagesecret
+  fileSystemType: thin
+  fuse:
+    image: kube-ai-registry.cn-shanghai.cr.aliyuncs.com/kube-ai/vllm-openai
+    imageTag: qwen3-0.6b
+    imagePullPolicy: IfNotPresent
+    command:
+    - bash
+    - "/entrypoint.sh"
+    # cleanPolicy: OnDemand
+    volumeMounts:
+    - name: model-image-entrypoint
+      subPath: entrypoint.sh
+      mountPath: /entrypoint.sh
+    - name: model-image-fluid-config-init
+      subPath: fluid_config_init.py
+      mountPath: /fluid_config_init.py
+  volumes:
+  - name: model-image-fluid-config-init
+    configMap:
+      name: model-image-fluid-config-init
+  - name: model-image-entrypoint
+    configMap:
+      name: model-image-entrypoint

@@ -1,0 +1,26 @@
+apiVersion: policy.one.alibabacloud.com/v1alpha1
+kind: ClusterOverridePolicy
+metadata:
+  name: model-op
+spec:
+  resourceSelectors:
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: ThinRuntimeProfile
+    name:  {{ include "model-ops-model.fullname" . }}
+  overrideRules:
+    - targetCluster:
+        clusterNames:
+          - c569730584901471a990e7529cae5468b
+      overriders:
+        plaintext:
+          - operator: replace
+            path: /spec/fuse/image
+            value: baicun-business-registry.cn-beijing.cr.aliyuncs.com/baicun-dev/model-volume
+    - targetCluster:
+        clusterNames:
+          - c4ac3272b29074e748fdbba9e09ddc84a
+      overriders:
+        plaintext:
+          - operator: replace
+            path: /spec/fuse/image
+            value: baicun-business-registry.ap-northeast-1.cr.aliyuncs.com/baicun-dev/model-volume

@@ -1,0 +1,65 @@
+apiVersion: policy.one.alibabacloud.com/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: demo-policy
+spec:
+#  autoScaling:
+#    ecsProvision: true
+  preserveResourcesOnDeletion: false
+  conflictResolution: Overwrite
+  resourceSelectors:
+  - apiVersion: apps/v1
+    kind: Deployment
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: Dataset
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: ThinRuntime
+  - apiVersion: v1
+    kind: ConfigMap
+  placement:
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        staticWeightList:
+        - targetCluster:
+            clusterNames:
+            - c569730584901471a990e7529cae5468b
+          weight: 1
+        - targetCluster:
+            clusterNames:
+            - c4ac3272b29074e748fdbba9e09ddc84a
+          weight: 1
+---
+apiVersion: policy.one.alibabacloud.com/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: demo-policy
+spec:
+#  autoScaling:
+#    ecsProvision: true
+  preserveResourcesOnDeletion: false
+  conflictResolution: Overwrite
+  resourceSelectors:
+  - apiVersion: apps/v1
+    kind: Deployment
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: Dataset
+  - apiVersion: data.fluid.io/v1alpha1
+    kind: ThinRuntime
+  - apiVersion: v1
+    kind: ConfigMap
+  placement:
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        staticWeightList:
+        - targetCluster:
+            clusterNames:
+            - c569730584901471a990e7529cae5468b
+          weight: 1
+        - targetCluster:
+            clusterNames:
+            - c4ac3272b29074e748fdbba9e09ddc84a
+          weight: 1

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-image-entrypoint
+data:
+  entrypoint.sh: |
+    #!/usr/bin/env bash
+    set +x
+    python /fluid_config_init.py
+    chmod u+x /mount-image-volume.sh
+    bash /mount-image-volume.sh
