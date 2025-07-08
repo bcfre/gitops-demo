@@ -4,7 +4,6 @@ metadata:
   labels:
     {{- include "model-ops-deploy.labels" . | nindent 4 }}
   name: {{ include "model-ops-deploy.fullname" . }}
-  namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:

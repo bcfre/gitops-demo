@@ -10,7 +10,6 @@ metadata:
     app.kubernetes.io/version: "1.16.0"
     app.kubernetes.io/managed-by: Helm
   name: qwen3-model-ops
-  namespace: default
 spec:
   replicas: 2
   selector:
