@@ -21,7 +21,7 @@ metadata:
   name: {{ include "model-ops-model.fullname" . }}
 spec:
   imagePullSecrets:
-  - name: imagesecret
+  - name: {{ .Values.imagePullSecrets.model }}
   fileSystemType: thin
   fuse:
     image: {{ .Values.image.deploy.repository }}

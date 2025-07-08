@@ -258,7 +258,7 @@ metadata:
   name: qwen3-qwen3-0-6b
 spec:
   imagePullSecrets:
-  - name: imagesecret
+  - name: [imagesecret]
   fileSystemType: thin
   fuse:
     image: kube-ai-registry.cn-shanghai.cr.aliyuncs.com/kube-ai/vllm-openai
