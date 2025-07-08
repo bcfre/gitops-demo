@@ -31,8 +31,7 @@ spec:
           - -c
           - "sleep infinity"
           # - vllm serve /mnt/model --served-model-name qwen3-0.6b --port 8000 --trust-remote-code --max-model-len 2048 --gpu-memory-utilization 0.95
-          image: {{ .Values.image.deploy.repository }}
-          imageTag: "{{ .Values.image.deploy.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.deploy.repository }}:{{ .Values.image.deploy.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: vllm
           ports:

@@ -18,8 +18,8 @@ image:
     tag: "qwen3-0.6b"
 
 imagePullSecrets: 
-  deploy: []
-  model: [imagesecret]
+  deploy: ""
+  model: imagesecret
 
 nameOverride: ""
 fullnameOverride: ""
@@ -93,7 +93,6 @@ tolerations: []
 
 affinity: {}
 
----
-modelMountPoint: oci+images:///models/model
+modelMountPoint: "oci+images:///models/model"
   
 

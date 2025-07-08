@@ -113,8 +113,7 @@ spec:
           - -c
           - "sleep infinity"
           # - vllm serve /mnt/model --served-model-name qwen3-0.6b --port 8000 --trust-remote-code --max-model-len 2048 --gpu-memory-utilization 0.95
-          image: kube-ai-registry.cn-shanghai.cr.aliyuncs.com/kube-ai/vllm-openai
-          imageTag: "v0.9.1"
+          image: "kube-ai-registry.cn-shanghai.cr.aliyuncs.com/kube-ai/vllm-openai:v0.9.1"
           imagePullPolicy: 
           name: vllm
           ports:
@@ -172,7 +171,7 @@ metadata:
 spec:
   mounts:
     # 模型文件在，镜像中的存储位置
-  - mountPoint: 
+  - mountPoint: oci+images:///models/model
     name: models-dir
 ---
 # Source: model-ops/templates/propagation.yaml
@@ -258,7 +257,7 @@ metadata:
   name: qwen3-qwen3-0-6b
 spec:
   imagePullSecrets:
-  - name: [imagesecret]
+  - name: imagesecret
   fileSystemType: thin
   fuse:
     image: kube-ai-registry.cn-shanghai.cr.aliyuncs.com/kube-ai/vllm-openai

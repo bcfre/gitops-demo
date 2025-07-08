@@ -20,8 +20,10 @@ kind: ThinRuntimeProfile
 metadata:
   name: {{ include "model-ops-model.fullname" . }}
 spec:
+  {{- if .Values.imagePullSecrets.model }}
   imagePullSecrets:
   - name: {{ .Values.imagePullSecrets.model }}
+  {{- end }}
   fileSystemType: thin
   fuse:
     image: {{ .Values.image.deploy.repository }}
