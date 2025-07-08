@@ -1,7 +1,7 @@
 apiVersion: policy.one.alibabacloud.com/v1alpha1
 kind: ClusterOverridePolicy
 metadata:
-  name: model-op
+  name: {{ include "model-ops-model.fullname" . }}
 spec:
   resourceSelectors:
   - apiVersion: data.fluid.io/v1alpha1

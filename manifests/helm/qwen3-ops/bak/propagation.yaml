@@ -1,35 +1,17 @@
 apiVersion: policy.one.alibabacloud.com/v1alpha1
-kind: PropagationPolicy
+kind: ClusterPropagationPolicy
 metadata:
-  name: demo-policy
+  name: dataset-cpp
 spec:
-#  autoScaling:
-#    ecsProvision: true
-  preserveResourcesOnDeletion: false
-  conflictResolution: Overwrite
+  overridePolicies:
+    - name: {{ include "model-ops-model.fullname" . }}
   resourceSelectors:
-  - apiVersion: apps/v1
-    kind: Deployment
   - apiVersion: data.fluid.io/v1alpha1
-    kind: Dataset
-  - apiVersion: data.fluid.io/v1alpha1
-    kind: ThinRuntime
-  - apiVersion: v1
-    kind: ConfigMap
+    kind: ThinRuntimeProfile
+    name:  {{ include "model-ops-model.fullname" . }}
   placement:
     replicaScheduling:
-      replicaSchedulingType: Divided
-      replicaDivisionPreference: Weighted
-      weightPreference:
-        staticWeightList:
-        - targetCluster:
-            clusterNames:
-            - c569730584901471a990e7529cae5468b
-          weight: 1
-        - targetCluster:
-            clusterNames:
-            - c4ac3272b29074e748fdbba9e09ddc84a
-          weight: 1
+      replicaSchedulingType: Duplicated
 ---
 apiVersion: policy.one.alibabacloud.com/v1alpha1
 kind: PropagationPolicy
