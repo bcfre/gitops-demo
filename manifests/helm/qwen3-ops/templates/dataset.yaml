@@ -2,6 +2,8 @@ apiVersion: data.fluid.io/v1alpha1
 kind: Dataset
 metadata:
   name: {{ include "model-ops-model.fullname" . }}
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
 spec:
   mounts:
     # 模型文件在，镜像中的存储位置
@@ -12,6 +14,8 @@ apiVersion: data.fluid.io/v1alpha1
 kind: ThinRuntime
 metadata:
   name: {{ include "model-ops-model.fullname" . }}
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
 spec:
   profileName: {{ include "model-ops-model.fullname" . }}
 ---
@@ -19,6 +23,8 @@ apiVersion: data.fluid.io/v1alpha1
 kind: ThinRuntimeProfile
 metadata:
   name: {{ include "model-ops-model.fullname" . }}
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
 spec:
   {{- if .Values.imagePullSecrets.model }}
   imagePullSecrets:

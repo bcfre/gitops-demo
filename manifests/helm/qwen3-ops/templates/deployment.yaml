@@ -2,13 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    {{- include "model-ops-deploy.labels" . | nindent 4 }}
+    {{- include "model-ops.labels" . | nindent 4 }}
   name: {{ include "model-ops-deploy.fullname" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "model-ops-deploy.selectorLabels" . | nindent 6 }}
+      {{- include "model-ops.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,7 +16,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "model-ops-deploy.selectorLabels" . | nindent 8 }}
+        {{- include "model-ops.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets.deploy }}
       imagePullSecrets:

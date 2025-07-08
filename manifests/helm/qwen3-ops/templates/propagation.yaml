@@ -2,6 +2,8 @@ apiVersion: policy.one.alibabacloud.com/v1alpha1
 kind: ClusterPropagationPolicy
 metadata:
   name: dataset-cpp
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
 spec:
   overridePolicies:
     - name: {{ include "model-ops-model.fullname" . }}
@@ -17,6 +19,8 @@ apiVersion: policy.one.alibabacloud.com/v1alpha1
 kind: PropagationPolicy
 metadata:
   name: demo-policy
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
 spec:
 #  autoScaling:
 #    ecsProvision: true
