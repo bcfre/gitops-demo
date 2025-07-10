@@ -34,7 +34,7 @@ spec:
   fuse:
     image: {{ .Values.modelimage.repository }}
     imageTag: {{ .Values.modelimage.tag }}
-    imagePullPolicy: {{ .Values.image.model.pullPolicy }}
+    imagePullPolicy: {{ .Values.modelimage.pullPolicy }}
     command:
     - bash
     - "/entrypoint.sh"
