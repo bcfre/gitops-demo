@@ -1,0 +1,55 @@
+apiVersion: data.fluid.io/v1alpha1
+kind: Dataset
+metadata:
+  name: {{ include "model-ops-model.fullname" . }}
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
+spec:
+  mounts:
+    # 模型文件在，镜像中的存储位置
+  - mountPoint: {{ .Values.modelMountPoint }}
+    name: models-dir
+---
+apiVersion: data.fluid.io/v1alpha1
+kind: ThinRuntime
+metadata:
+  name: {{ include "model-ops-model.fullname" . }}
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
+spec:
+  profileName: {{ include "model-ops-model.fullname" . }}
+---
+apiVersion: data.fluid.io/v1alpha1
+kind: ThinRuntimeProfile
+metadata:
+  name: {{ include "model-ops-model.fullname" . }}
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.imagePullSecrets.model }}
+  imagePullSecrets:
+  - name: {{ .Values.imagePullSecrets.model }}
+  {{- end }}
+  fileSystemType: thin
+  fuse:
+    image: {{ .Values.modelimage.repository }}
+    imageTag: {{ .Values.modelimage.tag }}
+    imagePullPolicy: {{ .Values.image.model.pullPolicy }}
+    command:
+    - bash
+    - "/entrypoint.sh"
+    # cleanPolicy: OnDemand
+    volumeMounts:
+    - name: model-image-entrypoint
+      subPath: entrypoint.sh
+      mountPath: /entrypoint.sh
+    - name: model-image-fluid-config-init
+      subPath: fluid_config_init.py
+      mountPath: /fluid_config_init.py
+  volumes:
+  - name: model-image-fluid-config-init
+    configMap:
+      name: model-image-fluid-config-init
+  - name: model-image-entrypoint
+    configMap:
+      name: model-image-entrypoint
