@@ -7,5 +7,5 @@ helm:
     value: baicun-business-registry.ap-northeast-1.cr.aliyuncs.com/baicun-dev/model-volume
     forcestring: true
   - name: modelimage.tag
-    value: qwen3-0.6b-v23
+    value: qwen3-0.6b-v27
     forcestring: true
