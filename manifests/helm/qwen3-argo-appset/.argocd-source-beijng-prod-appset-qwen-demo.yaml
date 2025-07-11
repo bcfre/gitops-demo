@@ -1,0 +1,11 @@
+helm:
+  parameters:
+  - name: replicaCount
+    value: "1"
+    forcestring: false
+  - name: modelimage.repository
+    value: baicun-business-registry.cn-beijing.cr.aliyuncs.com/baicun-dev/model-volume
+    forcestring: true
+  - name: modelimage.tag
+    value: qwen-0.6b-v22
+    forcestring: true
