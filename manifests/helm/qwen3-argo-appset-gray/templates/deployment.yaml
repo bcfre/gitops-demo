@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "model-ops.labels" . | nindent 4 }}
+  name: {{ include "model-ops-deploy.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "model-ops.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "model-ops.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets.deploy }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # imagePullSecrets:
+      # - name: imagesecret
+      containers:
+        - command:
+          - sh
+          - -c
+          - "sleep infinity"
+          # - vllm serve /mnt/model --served-model-name qwen3-0.6b --port 8000 --trust-remote-code --max-model-len 2048 --gpu-memory-utilization 0.95
+          image: "{{ .Values.image.deploy.repository }}:{{ .Values.image.deploy.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.deploy.pullPolicy }}
+          name: vllm
+          ports:
+          - containerPort: 8000
+            name: restful
+            protocol: TCP
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: 8000
+          #   initialDelaySeconds: 30
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /mnt/model
+              name: model-vol
+              mountPropagation: HostToContainer
+      volumes:
+        - name: model-vol
+          persistentVolumeClaim:
+            claimName: {{ include "model-ops-model.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

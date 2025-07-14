@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-image-fluid-config-init
+data:
+  fluid_config_init.py: |
+    import json
+    rawStr = ""
+    with open("/etc/fluid/config/config.json", "r") as f:
+        rawStr = f.readlines()
+    print(rawStr[0])
+
+    script = """
+    #!/bin/sh
+    MNT_POINT=$targetPath
+
+    echo $MNT_POINT
+
+    if test -e ${MNT_POINT}
+    then
+        echo "MNT_POINT exist"
+    else
+        mkdir -p ${MNT_POINT}
+    fi
+
+    mount --bind $sourcePath $MOUNT_POINT
+
+
+    cleanup() {
+        echo "Cleaning up mount point..."
+        umount ${MNT_POINT}
+        rmdir ${MNT_POINT}
+        exit
+    }
+
+    trap cleanup SIGINT SIGTERM
+    # 主程序逻辑
+
+    sleep inf
+    """
+
+    def parse_oci_uri(uri: str) -> str:
+        """
+        将格式为 oci:///models/model 的 URI 解析为 models/model。
+        如果 URI 不以 oci+images:// 开头，则抛出 ValueError。
+        """
+        prefix = 'oci+images://'
+        if not uri.startswith(prefix):
+            raise ValueError("URI must start with 'oci://'")
+        
+        # 截取路径部分并去除前导斜杠
+        path = uri[len(prefix):].lstrip('/')
+        return path
+
+
+    obj = json.loads(rawStr[0])
+    volAttrs = obj['mounts'][0]
+
+    print("pvAttrs", volAttrs)
+
+    sourcePathTmp = volAttrs["mountPoint"]
+    # additionalPathTmp = volAttrs["mountPoint"]
+
+    with open("/mount-image-volume.sh", "w") as f:
+        f.write("targetPath=\"%s\"\n" % obj['targetPath'])
+        f.write("sourcePath=\"%s\"\n" % parse_oci_uri(sourcePathTmp))
+        f.write(script)
