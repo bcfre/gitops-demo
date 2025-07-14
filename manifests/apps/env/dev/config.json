@@ -2,6 +2,6 @@
   "owner": "cluster-admin@company.com",
   "name": "production",
   "cluster_address": {
-    "bj": "https://1.2.3.4:6443"
+    "bj": "https://39.96.173.193:6443"
   }
 }
